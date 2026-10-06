@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { auth, signOut } from "@/auth";
+import { MassdriverLogo } from "@/components/MassdriverLogo";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -19,8 +20,10 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
       <body className="flex min-h-full flex-col">
         <header className="border-b border-line bg-surface">
           <div className="mx-auto flex max-w-3xl items-center justify-between px-4 py-3">
-            <Link href="/" className="font-semibold tracking-tight">
-              <span className="text-brand">▲</span> Massdriver Certification
+            <Link href="/" className="flex items-center gap-2 font-semibold tracking-tight">
+              <MassdriverLogo className="h-6" />
+              <span className="hidden text-muted sm:inline">·</span>
+              <span className="hidden sm:inline">Certification</span>
             </Link>
             <nav className="flex items-center gap-4 text-sm">
               {session?.user ? (

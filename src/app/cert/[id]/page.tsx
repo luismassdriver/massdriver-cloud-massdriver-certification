@@ -1,7 +1,8 @@
 import { notFound } from "next/navigation";
+import { CertificateCard } from "@/components/CertificateCard";
 import { formatDate } from "@/lib/certificate";
 import { certificateById } from "@/lib/db";
-import { PASS_MARK, QUESTIONS_PER_ATTEMPT, TRACKS } from "@/lib/questions";
+import { TRACKS } from "@/lib/questions";
 import { publicOrigin } from "@/lib/url";
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -14,28 +15,32 @@ export default async function CertificatePage(props: PageProps<"/cert/[id]">) {
   if (!cert) notFound();
   const origin = await publicOrigin();
   const track = TRACKS[cert.track];
+  const name = cert.user_name ?? cert.user_email;
 
   return (
-    <div className="mx-auto max-w-xl space-y-6">
-      <div className="card space-y-4 border-2 border-brand text-center">
-        <p className="text-xs font-semibold uppercase tracking-wide text-brand">
-          Verified certificate
-        </p>
-        <h1 className="text-2xl font-semibold">{cert.user_name ?? cert.user_email}</h1>
-        <p>
-          passed the <strong>Massdriver {track.title}</strong> certification
-        </p>
-        <p className="text-sm text-muted">
-          Score {cert.score}/{QUESTIONS_PER_ATTEMPT} (pass mark {PASS_MARK}) · Issued{" "}
-          {formatDate(new Date(cert.issued_at))}
-        </p>
-        <p className="font-mono text-xs text-muted">ID {cert.id}</p>
-        <div className="flex justify-center gap-3 pt-2">
-          <a href={`/cert/${cert.id}/pdf`} className="btn-primary">
-            Download PDF
-          </a>
+    <div className="space-y-6">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <p className="inline-flex items-center gap-2 rounded-full border border-success/40 bg-success/10 px-3 py-1 text-xs font-semibold text-success">
+            <span aria-hidden>✓</span> Verified by Massdriver Certification
+          </p>
+          <p className="mt-2 text-sm text-muted">
+            {name} passed the {track.title} certification on {formatDate(new Date(cert.issued_at))}.
+          </p>
         </div>
+        <a href={`/cert/${cert.id}/pdf`} className="btn-primary">
+          Download PDF
+        </a>
       </div>
+
+      <CertificateCard
+        name={name}
+        track={cert.track}
+        score={cert.score}
+        issuedAt={new Date(cert.issued_at)}
+        id={cert.id}
+      />
+
       <p className="text-center text-xs text-muted">
         Verification link: {origin}/cert/{cert.id}
       </p>
