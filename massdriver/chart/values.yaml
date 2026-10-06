@@ -1,0 +1,24 @@
+image:
+  repository: ghcr.io/luismassdriver/massdriver-cloud-massdriver-certification
+  tag: latest
+
+replicas: 1
+
+resources:
+  cpu: 500m
+  memory: 1Gi
+
+app:
+  port: 3000
+  devLogin: false
+  # Empty means "use whatever host the request came in on" (the ALB address).
+  publicUrl: ""
+  googleClientId: ""
+  githubClientId: ""
+
+# All set from Terraform via set_sensitive; never commit real values here.
+secrets:
+  databaseUrl: ""
+  authSecret: ""
+  googleClientSecret: ""
+  githubClientSecret: ""

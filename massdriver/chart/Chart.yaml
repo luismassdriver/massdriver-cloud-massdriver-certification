@@ -1,0 +1,6 @@
+apiVersion: v2
+name: massdriver-certification
+description: Massdriver Certification quiz app (Next.js) with a Postgres backend.
+type: application
+version: 0.1.0
+appVersion: "0.1.0"

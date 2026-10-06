@@ -1,0 +1,113 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{ .Release.Name }}
+type: Opaque
+stringData:
+  DATABASE_URL: {{ .Values.secrets.databaseUrl | quote }}
+  AUTH_SECRET: {{ .Values.secrets.authSecret | quote }}
+  {{- if and .Values.app.googleClientId .Values.secrets.googleClientSecret }}
+  AUTH_GOOGLE_ID: {{ .Values.app.googleClientId | quote }}
+  AUTH_GOOGLE_SECRET: {{ .Values.secrets.googleClientSecret | quote }}
+  {{- end }}
+  {{- if and .Values.app.githubClientId .Values.secrets.githubClientSecret }}
+  AUTH_GITHUB_ID: {{ .Values.app.githubClientId | quote }}
+  AUTH_GITHUB_SECRET: {{ .Values.secrets.githubClientSecret | quote }}
+  {{- end }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}
+spec:
+  replicas: {{ .Values.replicas }}
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}
+      annotations:
+        # Roll the pods whenever anything in the secret changes (database moved,
+        # OAuth added), rather than waiting for a restart to pick it up.
+        checksum/secret: {{ printf "%s/%s/%s/%s" .Values.secrets.databaseUrl .Values.secrets.authSecret .Values.app.googleClientId .Values.app.githubClientId | sha256sum }}
+    spec:
+      containers:
+        - name: app
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ if eq .Values.image.tag "latest" }}Always{{ else }}IfNotPresent{{ end }}
+          ports:
+            - containerPort: {{ .Values.app.port }}
+          envFrom:
+            - secretRef:
+                name: {{ .Release.Name }}
+          env:
+            - name: PORT
+              value: {{ .Values.app.port | quote }}
+            - name: HOSTNAME
+              value: "0.0.0.0"
+            - name: DATABASE_SSL
+              value: "require"
+            - name: AUTH_TRUST_HOST
+              value: "true"
+            - name: AUTH_DEV_LOGIN
+              value: {{ .Values.app.devLogin | quote }}
+            {{- if .Values.app.publicUrl }}
+            - name: AUTH_URL
+              value: {{ .Values.app.publicUrl | quote }}
+            - name: APP_URL
+              value: {{ .Values.app.publicUrl | quote }}
+            {{- end }}
+          readinessProbe:
+            httpGet:
+              path: /api/health
+              port: {{ .Values.app.port }}
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /api/health
+              port: {{ .Values.app.port }}
+            initialDelaySeconds: 20
+            periodSeconds: 30
+          resources:
+            requests:
+              cpu: {{ .Values.resources.cpu }}
+              memory: {{ .Values.resources.memory }}
+            limits:
+              cpu: {{ .Values.resources.cpu }}
+              memory: {{ .Values.resources.memory }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}
+spec:
+  selector:
+    app: {{ .Release.Name }}
+  ports:
+    - port: 80
+      targetPort: {{ .Values.app.port }}
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ .Release.Name }}
+  annotations:
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    # No nodes to route through on Fargate, so the balancer talks to pods directly.
+    alb.ingress.kubernetes.io/target-type: ip
+    alb.ingress.kubernetes.io/healthcheck-path: /api/health
+spec:
+  ingressClassName: alb
+  rules:
+    - http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ .Release.Name }}
+                port:
+                  number: 80

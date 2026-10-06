@@ -1,0 +1,199 @@
+name: massdriver-certification
+description: >-
+  The Massdriver Certification quiz: a Developer track and an Ops / Platform track, twenty
+  questions each, with a PDF certificate and a public verification page for everyone who
+  passes. Runs on a Kubernetes cluster and keeps attempts and certificates in the connected
+  Postgres database, creating its own tables on first start.
+source_url: https://github.com/luismassdriver/massdriver-cloud-massdriver-certification
+version: 0.0.0
+
+params:
+  examples:
+    - __name: Staging
+      image:
+        repository: ghcr.io/luismassdriver/massdriver-cloud-massdriver-certification
+        tag: latest
+      replicas: 1
+      resources:
+        cpu: 500m
+        memory: 1Gi
+      configuration:
+        dev_login: true
+        public_url: ""
+    - __name: Production
+      image:
+        repository: ghcr.io/luismassdriver/massdriver-cloud-massdriver-certification
+        tag: latest
+      replicas: 2
+      resources:
+        cpu: 1000m
+        memory: 2Gi
+      configuration:
+        dev_login: false
+        public_url: https://certify.example.com
+  required:
+    - image
+    - replicas
+    - resources
+    - configuration
+  properties:
+    image:
+      title: Container image
+      type: object
+      required:
+        - repository
+        - tag
+      properties:
+        repository:
+          title: Repository
+          description: Where the cluster pulls the app from. Must be pullable without credentials.
+          type: string
+          minLength: 1
+          default: ghcr.io/luismassdriver/massdriver-cloud-massdriver-certification
+        tag:
+          title: Tag
+          description: >-
+            A commit SHA pins the exact build; `latest` follows whatever CI pushed most recently.
+            Changing the tag rolls the pods.
+          type: string
+          minLength: 1
+          default: latest
+    replicas:
+      title: How many copies should run?
+      description: One is fine for a demo. Two or more means a rollout never leaves a gap.
+      type: integer
+      default: 1
+      minimum: 1
+      maximum: 10
+    resources:
+      title: Resources per copy
+      type: object
+      required:
+        - cpu
+        - memory
+      properties:
+        cpu:
+          title: CPU
+          description: Fargate rounds each pod up to the nearest size it offers.
+          type: string
+          default: 500m
+          oneOf:
+            - const: 250m
+              title: ¼ vCPU
+            - const: 500m
+              title: ½ vCPU
+            - const: 1000m
+              title: 1 vCPU
+            - const: 2000m
+              title: 2 vCPU
+        memory:
+          title: Memory
+          type: string
+          default: 1Gi
+          oneOf:
+            - const: 512Mi
+              title: 512 MiB
+            - const: 1Gi
+              title: 1 GiB
+            - const: 2Gi
+              title: 2 GiB
+            - const: 4Gi
+              title: 4 GiB
+    configuration:
+      title: Application configuration
+      type: object
+      required:
+        - dev_login
+      properties:
+        dev_login:
+          title: Allow passwordless sign-in
+          description: >-
+            Lets anyone sign in with just an email address. Right for a staging or demo
+            environment. Never turn this on somewhere real certificates are issued.
+          type: boolean
+          default: false
+        public_url:
+          title: Public URL
+          description: >-
+            The address people use to reach the app, printed on certificates and used for OAuth
+            callbacks. Leave empty to use the load balancer's own address, which is what you want
+            until a real domain points at it.
+          type: string
+          default: ""
+          pattern: ^(https?://.+)?$
+          message:
+            pattern: Must be empty or a full URL starting with http:// or https://
+        google_oauth:
+          title: Google sign-in
+          description: Optional. Both halves must be set for the "Continue with Google" button to appear.
+          type: object
+          properties:
+            client_id:
+              title: Client ID
+              type: string
+            client_secret:
+              title: Client secret
+              type: string
+              $md.sensitive: true
+        github_oauth:
+          title: GitHub sign-in
+          description: Optional. Both halves must be set for the "Continue with GitHub" button to appear.
+          type: object
+          properties:
+            client_id:
+              title: Client ID
+              type: string
+            client_secret:
+              title: Client secret
+              type: string
+              $md.sensitive: true
+
+dependencies:
+  runtime:
+    resource_type: kubernetes-cluster@0.0.0
+    required: true
+  database:
+    resource_type: postgres-database@0.0.0
+    required: true
+
+resources:
+  url:
+    resource_type: web-endpoint@0.0.0
+    required: true
+
+steps:
+  - path: src
+    provisioner: opentofu:1.10
+
+ui:
+  ui:order:
+    - image
+    - replicas
+    - resources
+    - configuration
+    - "*"
+  image:
+    ui:order:
+      - repository
+      - tag
+      - "*"
+  replicas:
+    ui:widget: updown
+  resources:
+    ui:order:
+      - cpu
+      - memory
+      - "*"
+  configuration:
+    ui:order:
+      - dev_login
+      - public_url
+      - google_oauth
+      - github_oauth
+      - "*"
+    google_oauth:
+      client_secret:
+        ui:widget: password
+    github_oauth:
+      client_secret:
+        ui:widget: password
