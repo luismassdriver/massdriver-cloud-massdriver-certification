@@ -18,6 +18,27 @@ describe("question bank", () => {
       expect(q.rationale.length).toBeGreaterThan(10);
     }
   });
+
+  it("does not let answer length give the correct option away", () => {
+    // Guards against the classic tell where the right answer is the longest,
+    // most detailed option. Two checks: no single question may have an option
+    // much longer than its siblings, and across the bank the correct option's
+    // length rank must look random (roughly a quarter in each position).
+    const rankCounts = [0, 0, 0, 0];
+    for (const q of QUESTIONS) {
+      const lens = q.options.map((o) => o.length);
+      const longest = Math.max(...lens);
+      const shortest = Math.min(...lens);
+      expect(longest / shortest, `${q.id}: option lengths ${lens.join(",")}`).toBeLessThanOrEqual(1.5);
+      const rank = [...lens].sort((a, b) => b - a).indexOf(lens[q.correct]);
+      rankCounts[rank] += 1;
+    }
+    // 40 questions; a fair distribution is ~10 per rank. Allow 4..16.
+    for (const [rank, count] of rankCounts.entries()) {
+      expect(count, `correct option is length-rank ${rank + 1} in ${count}/${QUESTIONS.length} questions`).toBeGreaterThanOrEqual(4);
+      expect(count, `correct option is length-rank ${rank + 1} in ${count}/${QUESTIONS.length} questions`).toBeLessThanOrEqual(16);
+    }
+  });
 });
 
 describe("layout", () => {
