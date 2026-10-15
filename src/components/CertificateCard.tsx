@@ -5,13 +5,11 @@ import { TRACKS, type Track } from "@/lib/questions";
 export function CertificateCard({
   name,
   track,
-  score,
   issuedAt,
   id,
 }: {
   name: string;
   track: Track;
-  score: number;
   issuedAt: Date;
   id: string;
 }) {

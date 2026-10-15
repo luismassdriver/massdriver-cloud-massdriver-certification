@@ -133,3 +133,28 @@ describe("latestCertificatePerTrack", () => {
     expect(latestCertificatePerTrack([cert("o", "ops", "2026-01-01")]).developer).toBeUndefined();
   });
 });
+
+describe("linkedin", () => {
+  it("builds an Add-to-profile link with every field pre-filled", async () => {
+    const { linkedInAddToProfileUrl, linkedInShareUrl } = await import("./linkedin");
+    const url = new URL(
+      linkedInAddToProfileUrl({
+        track: "developer",
+        issuedAt: new Date("2026-10-15T12:00:00Z"),
+        certId: "abc-123",
+        verifyUrl: "https://cert.example.com/cert/abc-123",
+      }),
+    );
+    expect(url.origin + url.pathname).toBe("https://www.linkedin.com/profile/add");
+    expect(url.searchParams.get("startTask")).toBe("CERTIFICATION_NAME");
+    expect(url.searchParams.get("name")).toBe("Massdriver Developer Certification");
+    expect(url.searchParams.get("organizationName")).toBe("Massdriver");
+    expect(url.searchParams.get("issueYear")).toBe("2026");
+    expect(url.searchParams.get("issueMonth")).toBe("10");
+    expect(url.searchParams.get("certUrl")).toBe("https://cert.example.com/cert/abc-123");
+    expect(url.searchParams.get("certId")).toBe("abc-123");
+    expect(linkedInShareUrl("https://cert.example.com/cert/abc-123")).toBe(
+      "https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fcert.example.com%2Fcert%2Fabc-123",
+    );
+  });
+});
