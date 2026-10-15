@@ -1,10 +1,9 @@
 import type { Track } from "@/lib/questions";
-import { linkedInAddToProfileUrl, linkedInShareUrl } from "@/lib/linkedin";
+import { linkedInAddToProfileUrl } from "@/lib/linkedin";
 
 /**
  * "Add to LinkedIn profile" opens LinkedIn's Licenses & certifications form
- * pre-filled; "Post on LinkedIn" opens the share dialog for the public
- * verification page. Server component: plain links, no JS needed.
+ * pre-filled from the certificate. Server component: a plain link, no JS.
  */
 export function LinkedInButtons({
   track,
@@ -20,19 +19,12 @@ export function LinkedInButtons({
   size?: "sm" | "md";
 }) {
   const add = linkedInAddToProfileUrl({ track, issuedAt, certId, verifyUrl });
-  const share = linkedInShareUrl(verifyUrl);
   const cls = size === "sm" ? "btn-secondary px-3 py-2" : "btn-secondary";
   return (
-    <>
-      <a href={add} target="_blank" rel="noreferrer" className={cls}>
-        <LinkedInIcon />
-        Add to LinkedIn profile
-      </a>
-      <a href={share} target="_blank" rel="noreferrer" className={cls}>
-        <LinkedInIcon />
-        Post on LinkedIn
-      </a>
-    </>
+    <a href={add} target="_blank" rel="noreferrer" className={cls}>
+      <LinkedInIcon />
+      Add to LinkedIn profile
+    </a>
   );
 }
 

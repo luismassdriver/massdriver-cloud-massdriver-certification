@@ -136,7 +136,7 @@ describe("latestCertificatePerTrack", () => {
 
 describe("linkedin", () => {
   it("builds an Add-to-profile link with every field pre-filled", async () => {
-    const { linkedInAddToProfileUrl, linkedInShareUrl } = await import("./linkedin");
+    const { linkedInAddToProfileUrl } = await import("./linkedin");
     const url = new URL(
       linkedInAddToProfileUrl({
         track: "developer",
@@ -153,8 +153,5 @@ describe("linkedin", () => {
     expect(url.searchParams.get("issueMonth")).toBe("10");
     expect(url.searchParams.get("certUrl")).toBe("https://cert.example.com/cert/abc-123");
     expect(url.searchParams.get("certId")).toBe("abc-123");
-    expect(linkedInShareUrl("https://cert.example.com/cert/abc-123")).toBe(
-      "https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fcert.example.com%2Fcert%2Fabc-123",
-    );
   });
 });

@@ -29,8 +29,3 @@ export function linkedInAddToProfileUrl(opts: {
   });
   return `https://www.linkedin.com/profile/add?${p.toString()}`;
 }
-
-/** LinkedIn's share dialog for a URL; the post preview comes from the page's Open Graph tags. */
-export function linkedInShareUrl(url: string): string {
-  return `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`;
-}
