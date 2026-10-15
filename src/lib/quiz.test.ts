@@ -103,3 +103,33 @@ describe("grade", () => {
     expect(grade(layout, answers).passed).toBe(false);
   });
 });
+
+describe("latestCertificatePerTrack", () => {
+  const cert = (id: string, track: "developer" | "ops", issued: string) => ({
+    id,
+    user_id: "u",
+    attempt_id: `a-${id}`,
+    track,
+    issued_at: new Date(issued),
+  });
+
+  it("keeps only the newest certificate per track and counts the rest", async () => {
+    const { latestCertificatePerTrack } = await import("./certificates");
+    const result = latestCertificatePerTrack([
+      cert("d-old", "developer", "2026-01-01"),
+      cert("o-1", "ops", "2026-03-01"),
+      cert("d-new", "developer", "2026-05-01"),
+      cert("d-mid", "developer", "2026-02-01"),
+    ]);
+    expect(result.developer?.latest.id).toBe("d-new");
+    expect(result.developer?.count).toBe(3);
+    expect(result.ops?.latest.id).toBe("o-1");
+    expect(result.ops?.count).toBe(1);
+  });
+
+  it("returns nothing for tracks without a certificate", async () => {
+    const { latestCertificatePerTrack } = await import("./certificates");
+    expect(latestCertificatePerTrack([])).toEqual({});
+    expect(latestCertificatePerTrack([cert("o", "ops", "2026-01-01")]).developer).toBeUndefined();
+  });
+});
