@@ -28,7 +28,9 @@ export default async function Home() {
             <div key={track} className="card flex flex-col gap-5">
               <div>
                 <p className="eyebrow">{t.audience}</p>
-                <h2 className="mt-2">{t.title} track</h2>
+                <h2 className="mt-2">
+                  <span className="text-coral">{t.title}</span> track
+                </h2>
                 <p className="mt-3 text-sm text-body">{t.description}</p>
               </div>
               <form action={startAttempt} className="mt-auto">
