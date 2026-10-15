@@ -1,6 +1,6 @@
 import { PDFDocument, StandardFonts, degrees, rgb } from "pdf-lib";
 import { BRAND, LOGO_PNG_BASE64, MARK_PNG_BASE64 } from "./brand";
-import { PASS_MARK, QUESTIONS_PER_ATTEMPT, TRACKS, type Track } from "./questions";
+import { TRACKS, type Track } from "./questions";
 
 export interface CertificateData {
   id: string;
@@ -99,14 +99,10 @@ export async function renderCertificatePdf(data: CertificateData): Promise<Uint8
   center(`${track.title} Certification`, height - 314, serifBold, 24, ink);
   center(track.description, height - 334, serifItalic, 11, muted);
 
-  // Left block: issued + score
+  // Left block: issue date
   const lx = 92;
   page.drawText("ISSUED", { x: lx, y: 186, size: 8, font: sansBold, color: ink });
   page.drawText(formatDate(data.issuedAt), { x: lx, y: 172, size: 11, font: serif, color: ink });
-  page.drawText("SCORE", { x: lx + 150, y: 186, size: 8, font: sansBold, color: ink });
-  page.drawText(`${data.score} of ${QUESTIONS_PER_ATTEMPT}  ·  pass mark ${PASS_MARK}`, {
-    x: lx + 150, y: 172, size: 11, font: serif, color: ink,
-  });
   // Signature-style line
   page.drawText("Massdriver", { x: lx, y: 122, size: 22, font: serifItalic, color: ink });
   page.drawLine({ start: { x: lx, y: 114 }, end: { x: lx + 220, y: 114 }, thickness: 0.6, color: gold });

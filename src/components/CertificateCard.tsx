@@ -1,6 +1,6 @@
 import { MassdriverLogo } from "./MassdriverLogo";
 import { formatDate } from "@/lib/certificate";
-import { PASS_MARK, QUESTIONS_PER_ATTEMPT, TRACKS, type Track } from "@/lib/questions";
+import { TRACKS, type Track } from "@/lib/questions";
 
 export function CertificateCard({
   name,
@@ -44,10 +44,6 @@ export function CertificateCard({
           <div className="text-xs text-[#6b7280]">
             <p className="font-semibold uppercase tracking-wider text-[#111827]">Issued</p>
             <p>{formatDate(issuedAt)}</p>
-            <p className="mt-2 font-semibold uppercase tracking-wider text-[#111827]">Score</p>
-            <p>
-              {score} / {QUESTIONS_PER_ATTEMPT} · pass mark {PASS_MARK}
-            </p>
           </div>
           <div className="certificate-seal" aria-label="Certified seal">
             <MassdriverLogo markOnly className="h-9 text-[#111827]" />
