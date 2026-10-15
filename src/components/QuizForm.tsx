@@ -37,7 +37,7 @@ export function QuizForm({
       <ol className="space-y-8">
         {questions.map((q) => (
           <li key={q.id} className="card">
-            <p className="mb-4 font-medium">
+            <p className="mb-4 text-[15px] text-foreground">
               <span className="mr-2 text-brand">{q.number}.</span>
               {q.prompt}
             </p>
@@ -47,10 +47,10 @@ export function QuizForm({
                 return (
                   <label
                     key={i}
-                    className={`flex cursor-pointer gap-3 rounded-lg border p-3 text-sm transition ${
+                    className={`flex cursor-pointer gap-3 border p-3 text-sm transition ${
                       selected
-                        ? "border-brand bg-brand/10"
-                        : "border-line hover:border-brand/50"
+                        ? "border-brand bg-brand/10 text-foreground"
+                        : "border-line hover:border-line-strong"
                     }`}
                   >
                     <input
@@ -72,7 +72,7 @@ export function QuizForm({
         ))}
       </ol>
 
-      <div className="sticky bottom-0 -mx-4 border-t border-line bg-surface/90 px-4 py-4 backdrop-blur sm:mx-0 sm:rounded-xl sm:border">
+      <div className="sticky bottom-0 -mx-4 border-t border-line bg-background/90 px-4 py-4 backdrop-blur sm:mx-0 sm:border">
         <div className="flex items-center justify-between gap-4">
           <p className="text-sm text-muted">
             {remaining === 0
@@ -87,7 +87,7 @@ export function QuizForm({
             {pending ? "Grading…" : "Submit"}
           </button>
         </div>
-        {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
+        {error && <p className="mt-2 text-sm text-danger">{error}</p>}
       </div>
     </div>
   );

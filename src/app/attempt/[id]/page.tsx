@@ -17,10 +17,10 @@ export default async function AttemptPage(props: PageProps<"/attempt/[id]">) {
   return (
     <div className="space-y-6">
       <div>
-        <p className="text-xs font-semibold uppercase tracking-wide text-brand">
+        <p className="eyebrow">
           {TRACKS[attempt.track].title} track
         </p>
-        <h1 className="text-2xl font-semibold">Certification quiz</h1>
+        <h1 className="mt-2">Certification quiz</h1>
       </div>
       <QuizForm attemptId={attempt.id} questions={questions} />
     </div>

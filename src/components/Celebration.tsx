@@ -32,7 +32,8 @@ export function Celebration() {
     resize();
     window.addEventListener("resize", resize);
 
-    const colors = ["#5b3df5", "#8b74ff", "#c99e3b", "#f5c542", "#15803d", "#ffffff", "#ff6b9d"];
+    // Massdriver palette: teal, coral, white, green, plus a little gold.
+    const colors = ["#2dd4bf", "#5eead4", "#0d9488", "#c75d3a", "#e8835f", "#22c55e", "#fafafa", "#c99e3b"];
     type P = {
       x: number; y: number; vx: number; vy: number; w: number; h: number;
       rot: number; vr: number; color: string; shape: 0 | 1 | 2; life: number;

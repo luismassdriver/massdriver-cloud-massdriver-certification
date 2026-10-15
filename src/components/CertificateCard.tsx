@@ -26,7 +26,7 @@ export function CertificateCard({
 
         <MassdriverLogo className="mx-auto h-9 text-[#111827]" />
 
-        <p className="mt-7 text-[11px] font-semibold uppercase tracking-[0.35em] text-[#5b3df5]">
+        <p className="mt-7 text-[11px] font-semibold uppercase tracking-[0.35em] text-[#0d9488]">
           Certificate of Achievement
         </p>
         <p className="mt-5 text-sm text-[#6b7280]">This certifies that</p>
