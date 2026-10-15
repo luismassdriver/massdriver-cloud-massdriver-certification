@@ -8,9 +8,21 @@ on:
 permissions:
   contents: read
   packages: write
+  pull-requests: write
 
 env:
   IMAGE: ghcr.io/${{ github.repository }}
+  MASSDRIVER_ORG_ID: ${{ vars.MASSDRIVER_ORG_ID || 'citizens' }}
+  MASSDRIVER_URL: ${{ vars.MASSDRIVER_URL || 'https://api.massdriver.cloud' }}
+  # Massdriver instance IDs: <project>-<env>-<component>
+  STAGING_INSTANCE: mdcert-staging-app
+  PREVIEW_INSTANCE: mdcert-staging-preview
+
+# One preview environment is shared by all open PRs, so only one PR deploys to
+# it at a time; a newer run for the same PR cancels the older one.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   test:
@@ -28,7 +40,9 @@ jobs:
 
   image:
     needs: test
-    if: github.event_name == 'push'
+    # Pushes to main and PRs from this repo. PRs from forks have no package
+    # write access and no Massdriver key, so they stop after the tests.
+    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -42,22 +56,72 @@ jobs:
         with:
           context: .
           push: true
-          # The EKS Fargate cluster pulls without credentials, so the package
-          # must be public: GitHub → package settings → "Change visibility".
+          # main: latest + sha. PRs: pr-<n> + sha. The GHCR package is public
+          # so the EKS Fargate cluster can pull without credentials.
           tags: |
-            ${{ env.IMAGE }}:latest
-            ${{ env.IMAGE }}:${{ github.sha }}
+            ${{ github.event_name == 'push' && format('{0}:latest', env.IMAGE) || format('{0}:pr-{1}', env.IMAGE, github.event.pull_request.number) }}
+            ${{ env.IMAGE }}:${{ github.event.pull_request.head.sha || github.sha }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-  bundle:
+  # Pull requests: deploy the PR's image to the shared preview instance and
+  # leave a comment on the PR with the preview address.
+  preview:
+    needs: image
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    env:
+      MASSDRIVER_API_KEY: ${{ secrets.MASSDRIVER_API_KEY }}
+      SHA: ${{ github.event.pull_request.head.sha }}
+    steps:
+      - name: Install Massdriver CLI
+        uses: massdriver-cloud/actions/setup@v6
+      - name: Deploy to the preview instance
+        run: |
+          mass instance deploy "$PREVIEW_INSTANCE" \
+            --patch ".image.tag = \"$SHA\"" \
+            --message "PR #${{ github.event.pull_request.number }} @ ${SHA::7}" \
+            --follow
+      - name: Read the preview URL
+        id: url
+        run: |
+          # The bundle emits a web-endpoint resource named "url"; its slug is <instance>-url.
+          url=$(mass resource get "$PREVIEW_INSTANCE-url" -o json | jq -r '.. | objects | select(has("url")) | .url' | grep -m1 '^http' || true)
+          echo "url=$url" >> "$GITHUB_OUTPUT"
+      - name: Comment on the PR
+        uses: actions/github-script@v7
+        env:
+          PREVIEW_URL: ${{ steps.url.outputs.url }}
+        with:
+          script: |
+            const marker = '<!-- preview-deploy -->';
+            const url = process.env.PREVIEW_URL;
+            const sha = process.env.SHA.slice(0, 7);
+            const body = [
+              marker,
+              `### 🔍 Preview deployed`,
+              ``,
+              url ? `**${url}**` : `_Deployed, but the preview URL could not be read; open the **PR Preview** instance in Massdriver._`,
+              ``,
+              `Built from \`${sha}\`. The preview is shared by all open PRs — the most recent PR run wins. Sign in with any email (passwordless).`,
+            ].join('\n');
+            const { owner, repo } = context.repo;
+            const issue_number = context.issue.number;
+            const { data: comments } = await github.rest.issues.listComments({ owner, repo, issue_number });
+            const existing = comments.find(c => c.body && c.body.startsWith(marker));
+            if (existing) {
+              await github.rest.issues.updateComment({ owner, repo, comment_id: existing.id, body });
+            } else {
+              await github.rest.issues.createComment({ owner, repo, issue_number, body });
+            }
+
+  # Pushes to main: publish the bundle and roll the staging app to this commit.
+  deploy:
     needs: image
     if: github.event_name == 'push'
     runs-on: ubuntu-latest
     env:
       MASSDRIVER_API_KEY: ${{ secrets.MASSDRIVER_API_KEY }}
-      MASSDRIVER_ORG_ID: ${{ vars.MASSDRIVER_ORG_ID || 'citizens' }}
-      MASSDRIVER_URL: ${{ vars.MASSDRIVER_URL || 'https://api.massdriver.cloud' }}
     steps:
       - uses: actions/checkout@v4
       - name: Install Massdriver CLI
@@ -70,3 +134,9 @@ jobs:
           mass repository create massdriver-certification -t bundle 2>&1 || true
           mass bundle build   --bundle-directory massdriver
           mass bundle publish --bundle-directory massdriver
+      - name: Deploy staging
+        run: |
+          mass instance deploy "$STAGING_INSTANCE" \
+            --patch ".image.tag = \"${{ github.sha }}\"" \
+            --message "main @ ${GITHUB_SHA::7}" \
+            --follow
