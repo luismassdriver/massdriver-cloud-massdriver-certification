@@ -125,31 +125,34 @@ strong { color: var(--foreground); }
 }
 
 /* ---------- Primitives */
-.eyebrow {
-  @apply text-[11px] font-medium uppercase tracking-[0.18em] text-brand;
-}
-.eyebrow-muted {
-  @apply text-[11px] font-medium uppercase tracking-[0.18em] text-muted;
-}
-.card {
-  @apply border border-line bg-surface p-5;
-  box-shadow: var(--shadow-1);
-}
-.btn-primary,
-.btn-secondary {
-  @apply inline-flex items-center justify-center gap-2 border px-4 py-2.5 text-[11px] font-medium uppercase tracking-[0.12em] transition disabled:cursor-not-allowed disabled:opacity-50;
-}
-.btn-primary {
-  @apply border-brand bg-brand text-brand-ink hover:border-brand-hover hover:bg-brand-hover;
-}
-.btn-secondary {
-  @apply border-line-strong bg-transparent text-foreground hover:border-brand hover:text-brand;
-}
-.input {
-  @apply mt-1 w-full border border-line bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted focus:border-brand focus:outline-none;
-}
-.theme-toggle {
-  @apply inline-flex h-8 w-8 items-center justify-center border border-transparent text-muted transition hover:border-line-strong hover:text-foreground;
+/* In the components layer so one-off utilities (e.g. text-coral) can override them. */
+@layer components {
+  .eyebrow {
+    @apply text-[11px] font-medium uppercase tracking-[0.18em] text-brand;
+  }
+  .eyebrow-muted {
+    @apply text-[11px] font-medium uppercase tracking-[0.18em] text-muted;
+  }
+  .card {
+    @apply border border-line bg-surface p-5;
+    box-shadow: var(--shadow-1);
+  }
+  .btn-primary,
+  .btn-secondary {
+    @apply inline-flex items-center justify-center gap-2 border px-4 py-2.5 text-[11px] font-medium uppercase tracking-[0.12em] transition disabled:cursor-not-allowed disabled:opacity-50;
+  }
+  .btn-primary {
+    @apply border-brand bg-brand text-brand-ink hover:border-brand-hover hover:bg-brand-hover;
+  }
+  .btn-secondary {
+    @apply border-line-strong bg-transparent text-foreground hover:border-brand hover:text-brand;
+  }
+  .input {
+    @apply mt-1 w-full border border-line bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted focus:border-brand focus:outline-none;
+  }
+  .theme-toggle {
+    @apply inline-flex h-8 w-8 items-center justify-center border border-transparent text-muted transition hover:border-line-strong hover:text-foreground;
+  }
 }
 
 /* ---------- Certificate (web rendition; always light, like the paper one) */

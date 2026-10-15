@@ -50,7 +50,7 @@ export default async function MePage() {
               <li key={track} className="card flex flex-col gap-2 border-brand/40">
                 <div className="flex items-start justify-between gap-3">
                   <div>
-                    <p className="eyebrow">{t.title}</p>
+                    <p className="eyebrow text-coral">{t.title}</p>
                     <p className="text-lg text-foreground">Massdriver {t.title} Certification</p>
                   </div>
                   <MassdriverLogo markOnly className="h-8 shrink-0 text-brand" />
