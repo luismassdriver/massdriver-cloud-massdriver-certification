@@ -23,8 +23,8 @@ export default async function MePage() {
     <div className="space-y-10">
       <section className="space-y-4">
         <div>
-          <h1 className="text-2xl font-semibold">Certificates</h1>
-          <p className="text-sm text-muted">
+          <h1>Certificates</h1>
+          <p className="mt-2 text-sm text-body">
             Your current certificate for each track. Earlier passes stay in the attempt history below.
           </p>
         </div>
@@ -35,8 +35,8 @@ export default async function MePage() {
             if (!entry) {
               return (
                 <li key={track} className="card flex flex-col gap-2 border-dashed">
-                  <p className="text-xs font-semibold uppercase tracking-wide text-muted">{t.title}</p>
-                  <p className="font-semibold">Not earned yet</p>
+                  <p className="eyebrow-muted">{t.title}</p>
+                  <p className="text-lg text-foreground">Not earned yet</p>
                   <p className="text-sm text-muted">{t.description}</p>
                   <form action={startAttempt} className="pt-1">
                     <input type="hidden" name="track" value={track} />
@@ -50,10 +50,10 @@ export default async function MePage() {
               <li key={track} className="card flex flex-col gap-2 border-brand/40">
                 <div className="flex items-start justify-between gap-3">
                   <div>
-                    <p className="text-xs font-semibold uppercase tracking-wide text-brand">{t.title}</p>
-                    <p className="font-semibold">Massdriver {t.title} Certification</p>
+                    <p className="eyebrow">{t.title}</p>
+                    <p className="text-lg text-foreground">Massdriver {t.title} Certification</p>
                   </div>
-                  <MassdriverLogo markOnly className="h-8 shrink-0 text-muted" />
+                  <MassdriverLogo markOnly className="h-8 shrink-0 text-brand" />
                 </div>
                 <p className="text-sm text-muted">
                   Issued {formatDate(new Date(c.issued_at))}
@@ -74,25 +74,26 @@ export default async function MePage() {
       </section>
 
       <section className="space-y-4">
-        <h2 className="text-xl font-semibold">Attempts</h2>
+        <h2>Attempts</h2>
         {attempts.length === 0 ? (
           <p className="text-muted">No attempts yet.</p>
         ) : (
+          <div className="card overflow-x-auto p-0">
           <table className="w-full text-sm">
-            <thead className="text-left text-xs uppercase tracking-wide text-muted">
+            <thead className="text-left text-[11px] uppercase tracking-[0.12em] text-muted">
               <tr>
-                <th className="py-2">Track</th>
-                <th className="py-2">Started</th>
-                <th className="py-2">Score</th>
-                <th className="py-2"></th>
+                <th className="px-4 py-3">Track</th>
+                <th className="px-4 py-3">Started</th>
+                <th className="px-4 py-3">Score</th>
+                <th className="px-4 py-3"></th>
               </tr>
             </thead>
             <tbody>
               {attempts.map((a) => (
                 <tr key={a.id} className="border-t border-line">
-                  <td className="py-2">{TRACKS[a.track].title}</td>
-                  <td className="py-2 text-muted">{formatDate(new Date(a.started_at))}</td>
-                  <td className="py-2">
+                  <td className="px-4 py-3 text-foreground">{TRACKS[a.track].title}</td>
+                  <td className="px-4 py-3 text-muted">{formatDate(new Date(a.started_at))}</td>
+                  <td className="px-4 py-3">
                     {a.submitted_at ? (
                       <span className={a.passed ? "text-success" : "text-danger"}>
                         {a.score}/20 {a.passed ? "pass" : "fail"}
@@ -101,7 +102,7 @@ export default async function MePage() {
                       <span className="text-muted">in progress</span>
                     )}
                   </td>
-                  <td className="py-2 text-right">
+                  <td className="px-4 py-3 text-right">
                     <Link
                       href={a.submitted_at ? `/attempt/${a.id}/result` : `/attempt/${a.id}`}
                       className="text-brand hover:underline"
@@ -113,6 +114,7 @@ export default async function MePage() {
               ))}
             </tbody>
           </table>
+          </div>
         )}
       </section>
     </div>

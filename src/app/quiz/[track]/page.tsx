@@ -8,8 +8,9 @@ export default async function QuizIntro(props: PageProps<"/quiz/[track]">) {
   const t = TRACKS[track];
   return (
     <div className="mx-auto max-w-xl space-y-6">
-      <h1 className="text-2xl font-semibold">{t.title} track</h1>
-      <p className="text-muted">{t.description}</p>
+      <p className="eyebrow">{t.audience}</p>
+      <h1>{t.title} track</h1>
+      <p className="text-body">{t.description}</p>
       <ul className="card list-disc space-y-1 pl-9 text-sm">
         <li>{QUESTIONS_PER_ATTEMPT} multiple-choice questions, one correct answer each.</li>
         <li>Pass at {PASS_MARK}/{QUESTIONS_PER_ATTEMPT}. Unanswered questions count as wrong.</li>

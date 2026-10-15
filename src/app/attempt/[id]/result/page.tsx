@@ -43,11 +43,11 @@ export default async function ResultPage(props: PageProps<"/attempt/[id]/result"
                 <small>/{result.total}</small>
               </span>
             </div>
-            <p className="text-xs font-semibold uppercase tracking-[0.3em] text-brand">
+            <p className="eyebrow">
               {track.title} track · Passed
             </p>
             <h1 className="pass-title mt-2">Congratulations, {firstName}!</h1>
-            <p className="mx-auto mt-3 max-w-lg text-base text-muted">
+            <p className="mx-auto mt-4 max-w-lg text-base text-body">
               You{"'"}re now <strong className="text-foreground">Massdriver {track.title} certified</strong>.
               {result.score === result.total
                 ? " A perfect score — not a single miss."
@@ -93,14 +93,14 @@ export default async function ResultPage(props: PageProps<"/attempt/[id]/result"
           </section>
         </>
       ) : (
-        <section className="card border-2 border-danger">
-          <p className="text-xs font-semibold uppercase tracking-wide text-brand">
+        <section className="card border-danger">
+          <p className="eyebrow">
             {track.title} track
           </p>
-          <h1 className="mt-1 text-3xl font-semibold">
+          <h1 className="mt-2">
             {result.score}/{result.total} — Not yet
           </h1>
-          <p className="mt-2 text-sm text-muted">
+          <p className="mt-3 text-sm text-body">
             You need {PASS_MARK} to pass. Review the explanations below, then try again — the
             questions and answer order are reshuffled.
           </p>
@@ -118,12 +118,12 @@ export default async function ResultPage(props: PageProps<"/attempt/[id]/result"
 
       {misses.length > 0 && (
         <section className="space-y-4">
-          <h2 className="text-xl font-semibold">
+          <h2>
             Review ({misses.length} {misses.length === 1 ? "miss" : "misses"})
           </h2>
           {misses.map((q) => (
             <div key={q.id} className="card space-y-3">
-              <p className="font-medium">
+              <p className="text-[15px] text-foreground">
                 <span className="mr-2 text-brand">{q.number}.</span>
                 {q.prompt}
               </p>
@@ -134,7 +134,7 @@ export default async function ResultPage(props: PageProps<"/attempt/[id]/result"
                   return (
                     <li
                       key={i}
-                      className={`rounded-lg border p-2 ${
+                      className={`border p-2 ${
                         isRight
                           ? "border-success bg-success/10"
                           : isChosen
@@ -155,8 +155,8 @@ export default async function ResultPage(props: PageProps<"/attempt/[id]/result"
                   <li className="text-xs text-danger">Not answered.</li>
                 )}
               </ul>
-              <p className="rounded-lg bg-background p-3 text-sm">
-                <span className="font-semibold">Why: </span>
+              <p className="border-l-2 border-brand bg-surface-2 p-3 text-sm">
+                <span className="font-medium text-foreground">Why: </span>
                 {q.rationale}
               </p>
             </div>

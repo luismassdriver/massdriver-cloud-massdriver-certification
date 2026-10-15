@@ -12,11 +12,12 @@ export default async function SignIn(props: PageProps<"/signin">) {
   const target = typeof callbackUrl === "string" && callbackUrl.startsWith("/") ? callbackUrl : "/";
   if (session?.user) redirect(target);
 
-  const oauth = PROVIDER_IDS.filter((id) => id !== "dev");
+  // The dev provider reports Auth.js's default "credentials" id, so exclude both.
+  const oauth = PROVIDER_IDS.filter((id) => id !== "dev" && id !== "credentials");
 
   return (
     <div className="mx-auto max-w-sm space-y-6">
-      <h1 className="text-2xl font-semibold">Sign in</h1>
+      <h1>Sign in</h1>
       {oauth.length === 0 && !DEV_LOGIN_ENABLED && (
         <p className="card text-sm text-danger">
           No sign-in method is configured. Set AUTH_GOOGLE_ID/SECRET or
@@ -46,24 +47,24 @@ export default async function SignIn(props: PageProps<"/signin">) {
             });
           }}
         >
-          <p className="text-xs font-semibold uppercase tracking-wide text-danger">
+          <p className="eyebrow text-danger">
             Dev login — no password, non-production only
           </p>
-          <label className="block text-sm">
+          <label className="block text-[11px] uppercase tracking-[0.12em] text-muted">
             Email
             <input
               name="email"
               type="email"
               required
-              className="mt-1 w-full rounded-lg border border-line bg-background px-3 py-2"
+              className="input"
             />
           </label>
-          <label className="block text-sm">
+          <label className="block text-[11px] uppercase tracking-[0.12em] text-muted">
             Name
             <input
               name="name"
               type="text"
-              className="mt-1 w-full rounded-lg border border-line bg-background px-3 py-2"
+              className="input"
             />
           </label>
           <button className="btn-primary w-full">Sign in</button>

@@ -21,10 +21,10 @@ export default async function CertificatePage(props: PageProps<"/cert/[id]">) {
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <p className="inline-flex items-center gap-2 rounded-full border border-success/40 bg-success/10 px-3 py-1 text-xs font-semibold text-success">
+          <p className="inline-flex items-center gap-2 border border-success/40 bg-success/10 px-3 py-1 text-[11px] font-medium uppercase tracking-[0.12em] text-success">
             <span aria-hidden>✓</span> Verified by Massdriver Certification
           </p>
-          <p className="mt-2 text-sm text-muted">
+          <p className="mt-2 text-sm text-body">
             {name} passed the {track.title} certification on {formatDate(new Date(cert.issued_at))}.
           </p>
         </div>
