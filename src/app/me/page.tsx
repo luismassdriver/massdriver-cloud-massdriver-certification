@@ -2,11 +2,13 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { startAttempt } from "@/app/actions";
 import { auth } from "@/auth";
+import { LinkedInButtons } from "@/components/LinkedInButtons";
 import { MassdriverLogo } from "@/components/MassdriverLogo";
 import { formatDate } from "@/lib/certificate";
 import { latestCertificatePerTrack } from "@/lib/certificates";
 import { attemptsForUser, certificatesForUser } from "@/lib/db";
 import { TRACKS, type Track } from "@/lib/questions";
+import { publicOrigin } from "@/lib/url";
 
 const TRACK_ORDER: Track[] = ["developer", "ops"];
 
@@ -18,6 +20,7 @@ export default async function MePage() {
     certificatesForUser(session.user.id),
   ]);
   const latest = latestCertificatePerTrack(certs);
+  const origin = await publicOrigin();
 
   return (
     <div className="space-y-10">
@@ -66,6 +69,15 @@ export default async function MePage() {
                   <Link href={`/cert/${c.id}`} className="btn-secondary">
                     Verification page
                   </Link>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  <LinkedInButtons
+                    track={track}
+                    issuedAt={new Date(c.issued_at)}
+                    certId={c.id}
+                    verifyUrl={`${origin}/cert/${c.id}`}
+                    size="sm"
+                  />
                 </div>
               </li>
             );

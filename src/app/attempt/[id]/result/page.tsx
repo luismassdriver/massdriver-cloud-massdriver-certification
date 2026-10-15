@@ -4,6 +4,7 @@ import { startAttempt } from "@/app/actions";
 import { auth } from "@/auth";
 import { Celebration } from "@/components/Celebration";
 import { CertificateCard } from "@/components/CertificateCard";
+import { LinkedInButtons } from "@/components/LinkedInButtons";
 import { ShareButtons } from "@/components/ShareButtons";
 import { attemptById, certificateForAttempt } from "@/lib/db";
 import { PASS_MARK, TRACKS } from "@/lib/questions";
@@ -61,7 +62,13 @@ export default async function ResultPage(props: PageProps<"/attempt/[id]/result"
                 Open verification page
               </Link>
             </div>
-            <div className="mt-3 flex justify-center">
+            <div className="mt-3 flex flex-wrap justify-center gap-2">
+              <LinkedInButtons
+                track={attempt.track}
+                issuedAt={new Date(cert.issued_at)}
+                certId={cert.id}
+                verifyUrl={verifyUrl}
+              />
               <ShareButtons
                 url={verifyUrl}
                 title={`I just earned the Massdriver ${track.title} certification`}
@@ -76,7 +83,6 @@ export default async function ResultPage(props: PageProps<"/attempt/[id]/result"
             <CertificateCard
               name={displayName}
               track={attempt.track}
-              score={result.score}
               issuedAt={new Date(cert.issued_at)}
               id={cert.id}
             />

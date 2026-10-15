@@ -1,13 +1,45 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { CertificateCard } from "@/components/CertificateCard";
+import { LinkedInButtons } from "@/components/LinkedInButtons";
 import { formatDate } from "@/lib/certificate";
 import { certificateById } from "@/lib/db";
+import { certificationName } from "@/lib/linkedin";
 import { TRACKS } from "@/lib/questions";
 import { publicOrigin } from "@/lib/url";
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
-/** Public verification page: no sign-in required, shows only name, track, score and date. */
+/**
+ * Open Graph / Twitter tags so a LinkedIn (or Slack, X…) post of the
+ * verification link unfurls as a certificate card. The image itself is
+ * rendered by ./opengraph-image.tsx.
+ */
+export async function generateMetadata(props: PageProps<"/cert/[id]">): Promise<Metadata> {
+  const { id } = await props.params;
+  if (!UUID.test(id)) return {};
+  const cert = await certificateById(id);
+  if (!cert) return {};
+  const origin = await publicOrigin();
+  const name = cert.user_name ?? cert.user_email;
+  const title = `${name} · ${certificationName(cert.track)}`;
+  const description = `${name} passed the Massdriver ${TRACKS[cert.track].title} certification on ${formatDate(new Date(cert.issued_at))}. Verified by Massdriver Certification.`;
+  return {
+    metadataBase: new URL(origin),
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      type: "website",
+      url: `/cert/${cert.id}`,
+      siteName: "Massdriver Certification",
+    },
+    twitter: { card: "summary_large_image", title, description },
+  };
+}
+
+/** Public verification page: no sign-in required, shows only name, track and date. */
 export default async function CertificatePage(props: PageProps<"/cert/[id]">) {
   const { id } = await props.params;
   if (!UUID.test(id)) notFound();
@@ -16,6 +48,7 @@ export default async function CertificatePage(props: PageProps<"/cert/[id]">) {
   const origin = await publicOrigin();
   const track = TRACKS[cert.track];
   const name = cert.user_name ?? cert.user_email;
+  const verifyUrl = `${origin}/cert/${cert.id}`;
 
   return (
     <div className="space-y-6">
@@ -36,14 +69,20 @@ export default async function CertificatePage(props: PageProps<"/cert/[id]">) {
       <CertificateCard
         name={name}
         track={cert.track}
-        score={cert.score}
         issuedAt={new Date(cert.issued_at)}
         id={cert.id}
       />
 
-      <p className="text-center text-xs text-muted">
-        Verification link: {origin}/cert/{cert.id}
-      </p>
+      <div className="flex flex-wrap justify-center gap-2">
+        <LinkedInButtons
+          track={cert.track}
+          issuedAt={new Date(cert.issued_at)}
+          certId={cert.id}
+          verifyUrl={verifyUrl}
+        />
+      </div>
+
+      <p className="text-center text-xs text-muted">Verification link: {verifyUrl}</p>
     </div>
   );
 }

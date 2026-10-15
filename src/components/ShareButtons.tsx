@@ -4,7 +4,6 @@ import { useState } from "react";
 
 export function ShareButtons({ url, title }: { url: string; title: string }) {
   const [copied, setCopied] = useState(false);
-  const linkedin = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`;
   const x = `https://twitter.com/intent/tweet?text=${encodeURIComponent(`${title} 🎓`)}&url=${encodeURIComponent(url)}`;
 
   async function copy() {
@@ -22,9 +21,6 @@ export function ShareButtons({ url, title }: { url: string; title: string }) {
       <button type="button" onClick={copy} className="btn-secondary">
         {copied ? "Copied!" : "Copy verification link"}
       </button>
-      <a href={linkedin} target="_blank" rel="noreferrer" className="btn-secondary">
-        Share on LinkedIn
-      </a>
       <a href={x} target="_blank" rel="noreferrer" className="btn-secondary">
         Post on X
       </a>
