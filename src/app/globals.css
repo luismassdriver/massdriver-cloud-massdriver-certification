@@ -213,6 +213,64 @@ strong { color: var(--foreground); }
   flex-shrink: 0;
 }
 
+/* ---------- "Certified" rosette on a passed track card */
+.ribbon-seal {
+  position: absolute;
+  width: 84px;
+  height: 112px;
+  pointer-events: none;
+}
+.ribbon-seal-disc {
+  position: absolute;
+  top: 0;
+  left: 6px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+  width: 72px;
+  height: 72px;
+  border-radius: 9999px;
+  border: 2px solid #c99e3b;
+  outline: 1px solid #c99e3b;
+  outline-offset: 3px;
+  background: radial-gradient(circle at 50% 35%, #fff 0%, #f3ecd8 100%);
+  color: #8a6a1e;
+  font-size: 7px;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  box-shadow: 0 6px 14px -6px rgba(0, 0, 0, 0.45);
+}
+.ribbon-seal-mark {
+  height: 26px;
+  color: #111827;
+}
+.ribbon-seal-text {
+  line-height: 1;
+}
+.ribbon-seal-tail {
+  position: absolute;
+  top: 54px;
+  width: 22px;
+  height: 52px;
+  background: linear-gradient(180deg, #c99e3b, #a9812a);
+  /* notched ribbon end */
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 82%, 0 100%);
+}
+.ribbon-seal-tail-left {
+  left: 20px;
+  transform: rotate(14deg);
+  transform-origin: top center;
+}
+.ribbon-seal-tail-right {
+  left: 42px;
+  transform: rotate(-14deg);
+  transform-origin: top center;
+  background: linear-gradient(180deg, #b58e34, #9a7524);
+}
+
 /* ---------- Pass celebration */
 .pass-hero {
   @apply relative overflow-hidden border border-brand/50 bg-surface text-center;
