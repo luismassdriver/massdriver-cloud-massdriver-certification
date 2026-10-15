@@ -1,9 +1,14 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { startAttempt } from "@/app/actions";
 import { auth } from "@/auth";
+import { MassdriverLogo } from "@/components/MassdriverLogo";
 import { formatDate } from "@/lib/certificate";
+import { latestCertificatePerTrack } from "@/lib/certificates";
 import { attemptsForUser, certificatesForUser } from "@/lib/db";
-import { TRACKS } from "@/lib/questions";
+import { TRACKS, type Track } from "@/lib/questions";
+
+const TRACK_ORDER: Track[] = ["developer", "ops"];
 
 export default async function MePage() {
   const session = await auth();
@@ -12,31 +17,60 @@ export default async function MePage() {
     attemptsForUser(session.user.id),
     certificatesForUser(session.user.id),
   ]);
+  const latest = latestCertificatePerTrack(certs);
 
   return (
     <div className="space-y-10">
       <section className="space-y-4">
-        <h1 className="text-2xl font-semibold">Certificates</h1>
-        {certs.length === 0 ? (
-          <p className="text-muted">None yet. Pass a track to earn one.</p>
-        ) : (
-          <ul className="grid gap-4 sm:grid-cols-2">
-            {certs.map((c) => (
-              <li key={c.id} className="card space-y-2">
-                <p className="font-semibold">Massdriver {TRACKS[c.track].title}</p>
-                <p className="text-sm text-muted">Issued {formatDate(new Date(c.issued_at))}</p>
-                <div className="flex gap-3 pt-1">
-                  <Link href={`/cert/${c.id}`} className="btn-secondary">
-                    Verify link
-                  </Link>
+        <div>
+          <h1 className="text-2xl font-semibold">Certificates</h1>
+          <p className="text-sm text-muted">
+            Your current certificate for each track. Earlier passes stay in the attempt history below.
+          </p>
+        </div>
+        <ul className="grid gap-4 sm:grid-cols-2">
+          {TRACK_ORDER.map((track) => {
+            const entry = latest[track];
+            const t = TRACKS[track];
+            if (!entry) {
+              return (
+                <li key={track} className="card flex flex-col gap-2 border-dashed">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-muted">{t.title}</p>
+                  <p className="font-semibold">Not earned yet</p>
+                  <p className="text-sm text-muted">{t.description}</p>
+                  <form action={startAttempt} className="pt-1">
+                    <input type="hidden" name="track" value={track} />
+                    <button className="btn-secondary">Start quiz</button>
+                  </form>
+                </li>
+              );
+            }
+            const c = entry.latest;
+            return (
+              <li key={track} className="card flex flex-col gap-2 border-brand/40">
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-wide text-brand">{t.title}</p>
+                    <p className="font-semibold">Massdriver {t.title} Certification</p>
+                  </div>
+                  <MassdriverLogo markOnly className="h-8 shrink-0 text-muted" />
+                </div>
+                <p className="text-sm text-muted">
+                  Issued {formatDate(new Date(c.issued_at))}
+                  {entry.count > 1 && ` · latest of ${entry.count}`}
+                </p>
+                <div className="flex flex-wrap gap-3 pt-1">
                   <a href={`/cert/${c.id}/pdf`} className="btn-primary">
-                    PDF
+                    Download PDF
                   </a>
+                  <Link href={`/cert/${c.id}`} className="btn-secondary">
+                    Verification page
+                  </Link>
                 </div>
               </li>
-            ))}
-          </ul>
-        )}
+            );
+          })}
+        </ul>
       </section>
 
       <section className="space-y-4">
