@@ -4,10 +4,12 @@ import { startAttempt } from "@/app/actions";
 import { auth } from "@/auth";
 import { LinkedInButtons } from "@/components/LinkedInButtons";
 import { MassdriverLogo } from "@/components/MassdriverLogo";
+import { CheckIcon, TrainingProgressBar } from "@/components/TrainingProgress";
 import { formatDate } from "@/lib/certificate";
 import { latestCertificatePerTrack } from "@/lib/certificates";
-import { attemptsForUser, certificatesForUser } from "@/lib/db";
+import { attemptsForUser, certificatesForUser, trainingProgressForUser } from "@/lib/db";
 import { TRACKS, type Track } from "@/lib/questions";
+import { totalMinutes, trackProgress } from "@/lib/trainingProgress";
 import { publicOrigin } from "@/lib/url";
 
 const TRACK_ORDER: Track[] = ["developer", "ops"];
@@ -15,9 +17,10 @@ const TRACK_ORDER: Track[] = ["developer", "ops"];
 export default async function MePage() {
   const session = await auth();
   if (!session?.user) redirect("/signin?callbackUrl=/me");
-  const [attempts, certs] = await Promise.all([
+  const [attempts, certs, progressRows] = await Promise.all([
     attemptsForUser(session.user.id),
     certificatesForUser(session.user.id),
+    trainingProgressForUser(session.user.id),
   ]);
   const latest = latestCertificatePerTrack(certs);
   const origin = await publicOrigin();
@@ -78,6 +81,46 @@ export default async function MePage() {
                     verifyUrl={`${origin}/cert/${c.id}`}
                     size="sm"
                   />
+                </div>
+              </li>
+            );
+          })}
+        </ul>
+      </section>
+
+      <section className="space-y-4">
+        <h2>Training</h2>
+        <ul className="grid gap-4 sm:grid-cols-2">
+          {TRACK_ORDER.map((track) => {
+            const t = TRACKS[track];
+            const p = trackProgress(progressRows, track);
+            return (
+              <li key={track} className={`card flex flex-col gap-3 ${p.isComplete ? "border-success/60" : ""}`}>
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <p className="eyebrow-muted">{t.title}</p>
+                    <p className="flex items-center gap-2 text-lg text-foreground">
+                      {p.isComplete && (
+                        <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-success text-brand-ink">
+                          <CheckIcon />
+                        </span>
+                      )}
+                      {p.isComplete ? "Training complete" : p.completed > 0 ? "In progress" : "Not started"}
+                    </p>
+                  </div>
+                  <span className="text-[11px] uppercase tracking-[0.12em] text-muted">{totalMinutes(track)} min</span>
+                </div>
+                <TrainingProgressBar progress={p} />
+                {p.isComplete && p.completedAt && (
+                  <p className="text-sm text-muted">Completed {formatDate(p.completedAt)}</p>
+                )}
+                <div className="pt-1">
+                  <Link
+                    href={p.isComplete || p.completed === 0 ? `/training/${track}` : `/training/${track}/${p.nextIndex + 1}`}
+                    className="btn-secondary"
+                  >
+                    {p.isComplete ? "Review training" : p.completed > 0 ? "Continue training" : "Start training"}
+                  </Link>
                 </div>
               </li>
             );

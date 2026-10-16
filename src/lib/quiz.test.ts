@@ -155,3 +155,42 @@ describe("linkedin", () => {
     expect(url.searchParams.get("certId")).toBe("abc-123");
   });
 });
+
+describe("training", () => {
+  it("every practice question exists and belongs to the section's track", async () => {
+    const { TRAINING } = await import("./training");
+    const { questionById } = await import("./questions");
+    for (const track of ["developer", "ops"] as const) {
+      const mod = TRAINING[track];
+      expect(mod.sections.length).toBeGreaterThanOrEqual(4);
+      const slugs = new Set<string>();
+      for (const s of mod.sections) {
+        expect(slugs.has(s.slug)).toBe(false);
+        slugs.add(s.slug);
+        expect(s.practice.length).toBeGreaterThanOrEqual(1);
+        expect(s.practice.length).toBeLessThanOrEqual(2);
+        for (const id of s.practice) {
+          const q = questionById(id);
+          expect(q, `${track}/${s.slug}: unknown question ${id}`).toBeDefined();
+          expect(q!.track).toBe(track);
+        }
+      }
+    }
+  });
+
+  it("summarises progress per track", async () => {
+    const { trackProgress } = await import("./trainingProgress");
+    const { TRAINING } = await import("./training");
+    const slugs = TRAINING.developer.sections.map((s) => s.slug);
+    const rows = slugs.slice(0, 2).map((section, i) => ({ track: "developer" as const, section, completed_at: new Date(2026, 9, 1 + i) }));
+    const p = trackProgress(rows, "developer");
+    expect(p.completed).toBe(2);
+    expect(p.isComplete).toBe(false);
+    expect(p.nextIndex).toBe(2);
+    const all = slugs.map((section, i) => ({ track: "developer" as const, section, completed_at: new Date(2026, 9, 1 + i) }));
+    const done = trackProgress(all, "developer");
+    expect(done.isComplete).toBe(true);
+    expect(done.completedAt?.getDate()).toBe(slugs.length);
+    expect(trackProgress(all, "ops").completed).toBe(0);
+  });
+});
