@@ -213,6 +213,85 @@ strong { color: var(--foreground); }
   flex-shrink: 0;
 }
 
+/* ---------- Home-page bundle canvas */
+/* The drag area is invisible and spans the whole viewport, so cards can be
+   dragged past the content column; only the vertical band is bounded. */
+.track-canvas {
+  position: relative;
+  width: 100vw;
+  margin-left: calc(50% - 50vw);
+  overflow: hidden;
+  touch-action: none; /* pointer drags, not page scroll, while on the canvas */
+}
+.track-canvas-edges {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+}
+.track-canvas-edge {
+  fill: none;
+  stroke: var(--brand);
+  stroke-width: 1.5;
+}
+.track-canvas-edge-mid circle {
+  fill: var(--background);
+  stroke: var(--line-strong);
+  stroke-width: 1;
+}
+.track-canvas-edge-mid path {
+  stroke: var(--muted);
+  stroke-width: 1.2;
+  stroke-linecap: round;
+}
+.track-canvas-node {
+  position: absolute;
+  top: 0;
+  left: 0;
+  cursor: grab;
+  user-select: none;
+  will-change: transform;
+}
+.track-canvas-node.is-dragging {
+  cursor: grabbing;
+  z-index: 10;
+}
+.track-canvas-node.is-dragging > .card {
+  box-shadow: var(--shadow-2);
+  border-color: var(--brand);
+}
+.track-canvas-port {
+  position: absolute;
+  top: 50%;
+  width: 12px;
+  height: 12px;
+  margin-top: -6px;
+  border-radius: 9999px;
+  border: 1.5px solid var(--brand);
+  background: var(--background);
+  z-index: 2;
+}
+.track-canvas-port::after {
+  content: "";
+  position: absolute;
+  inset: 3px;
+  border-radius: 9999px;
+  background: var(--brand);
+}
+.track-canvas-port-in { left: -7px; }
+.track-canvas-port-out { right: -7px; }
+/* Stacked (narrow) canvas: ports on the top and bottom edges instead */
+.is-narrow .track-canvas-port {
+  top: auto;
+  left: 50%;
+  margin-top: 0;
+  margin-left: -6px;
+}
+.is-narrow .track-canvas-port-in { top: -7px; }
+.is-narrow .track-canvas-port-out { bottom: -7px; }
+
 /* ---------- "Certified" rosette on a passed track card */
 .ribbon-seal {
   position: absolute;
