@@ -214,13 +214,10 @@ strong { color: var(--foreground); }
 }
 
 /* ---------- Home-page bundle canvas */
+/* The drag area is invisible: the cards float on the page itself. */
 .track-canvas {
   position: relative;
   overflow: hidden;
-  border: 1px solid var(--line);
-  background-color: var(--surface);
-  background-image: radial-gradient(color-mix(in oklab, var(--line-strong) 70%, transparent) 1px, transparent 1px);
-  background-size: 20px 20px;
   touch-action: none; /* pointer drags, not page scroll, while on the canvas */
 }
 .track-canvas-edges {
@@ -237,7 +234,7 @@ strong { color: var(--foreground); }
   stroke-width: 1.5;
 }
 .track-canvas-edge-mid circle {
-  fill: var(--surface);
+  fill: var(--background);
   stroke: var(--line-strong);
   stroke-width: 1;
 }
@@ -261,9 +258,6 @@ strong { color: var(--foreground); }
 .track-canvas-node.is-dragging > .card {
   box-shadow: var(--shadow-2);
   border-color: var(--brand);
-}
-.track-canvas-node > .card {
-  background-color: var(--background);
 }
 .track-canvas-port {
   position: absolute;

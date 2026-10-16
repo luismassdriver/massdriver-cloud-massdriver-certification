@@ -229,8 +229,7 @@ export function TrackCanvas({ nodes, edge }: { nodes: CanvasNode[]; edge: [strin
           );
         })}
       </div>
-      <div className="flex items-center justify-between text-[11px] uppercase tracking-[0.12em] text-muted">
-        <span>Drag the bundles around · Ops / Platform provisions what Developers deploy onto</span>
+      <div className="flex justify-end text-[11px] uppercase tracking-[0.12em]">
         <button type="button" onClick={reset} className="text-muted transition hover:text-brand">
           Reset layout
         </button>
