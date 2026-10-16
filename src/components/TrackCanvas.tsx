@@ -27,7 +27,9 @@ type Pos = { x: number; y: number };
 type Layout = Record<string, Pos>;
 
 const NODE_W = 320;
-const PAD = 16; // keeps the rosette (which overhangs the card) inside the canvas
+const PAD = 16; // keeps the rosette (which overhangs the card) inside the canvas vertically
+const COL_W = 736; // the page's content column; positions are relative to its left edge
+const EDGE_GRIP = 48; // how much of a card must stay on screen when dragged off the side
 const CANVAS_H = 460;
 const CANVAS_H_NARROW = 620;
 const NARROW_BELOW = NODE_W * 2 + 56; // below this the nodes stack vertically
@@ -62,16 +64,17 @@ function writeSaved(layout: Layout | null) {
   window.dispatchEvent(new Event(LAYOUT_EVENT));
 }
 
-function defaultLayout(width: number, ids: string[], heights: Record<string, number>): Layout {
+// Default positions, relative to the content column (not the full-width canvas).
+function defaultLayout(col: number, ids: string[], heights: Record<string, number>): Layout {
   const [left, right] = ids;
-  if (width < NARROW_BELOW) {
+  if (col < NARROW_BELOW) {
     // Stacked: the top node's output runs down into the bottom node's input.
-    const x = Math.max(PAD, (width - NODE_W) / 2);
+    const x = Math.max(0, (col - NODE_W) / 2);
     return { [left]: { x, y: PAD + 8 }, [right]: { x, y: PAD + 8 + (heights[left] ?? 240) + 72 } };
   }
   return {
-    [left]: { x: PAD, y: 48 },
-    [right]: { x: width - NODE_W - PAD, y: 120 },
+    [left]: { x: 0, y: 48 },
+    [right]: { x: col - NODE_W, y: 120 },
   };
 }
 
@@ -106,6 +109,14 @@ export function TrackCanvas({ nodes, edge }: { nodes: CanvasNode[]; edge: [strin
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ids.join(",")]);
 
+  // The canvas spans the whole viewport so cards can be dragged past the
+  // content column; coordinates stay relative to the column's left edge so a
+  // saved layout looks the same at any window width.
+  const col = Math.min(width, COL_W);
+  const colLeft = Math.max(0, (width - col) / 2);
+  const minX = -colLeft - NODE_W + EDGE_GRIP;
+  const maxX = width - colLeft - EDGE_GRIP;
+
   let layout: Layout | null = null;
   if (width) {
     let saved: Layout | null = null;
@@ -114,16 +125,18 @@ export function TrackCanvas({ nodes, edge }: { nodes: CanvasNode[]; edge: [strin
     } catch {
       saved = null;
     }
-    const fits = saved && ids.every((id) => saved![id] && saved![id].x + NODE_W <= width + 1);
-    layout = live ?? (fits ? saved! : defaultLayout(width, ids, heights));
+    const fits = saved && ids.every((id) => saved![id] && saved![id].x >= minX && saved![id].x <= maxX);
+    layout = live ?? (fits ? saved! : defaultLayout(col, ids, heights));
   }
-  const narrow = width > 0 && width < NARROW_BELOW;
+  const narrow = width > 0 && col < NARROW_BELOW;
   const canvasH = narrow ? CANVAS_H_NARROW : CANVAS_H;
 
+  // Sideways the only limit is keeping a grabbable sliver on screen; up and
+  // down the card stays inside the canvas band.
   function clamp(p: Pos, id: string): Pos {
     const h = heights[id] ?? 200;
     return {
-      x: Math.min(Math.max(PAD, p.x), Math.max(PAD, width - NODE_W - PAD)),
+      x: Math.min(Math.max(minX, p.x), Math.max(minX, maxX)),
       y: Math.min(Math.max(PAD, p.y), Math.max(PAD, canvasH - h - PAD)),
     };
   }
@@ -159,6 +172,9 @@ export function TrackCanvas({ nodes, edge }: { nodes: CanvasNode[]; edge: [strin
     writeSaved(null);
   }
 
+  // Column-relative → canvas pixels.
+  const px = (p: Pos): Pos => ({ x: p.x + colLeft, y: p.y });
+
   // Edge: from the right port of the source node to the left port of the target.
   const [from, to] = edge;
   let path = "";
@@ -166,14 +182,14 @@ export function TrackCanvas({ nodes, edge }: { nodes: CanvasNode[]; edge: [strin
   if (layout && layout[from] && layout[to]) {
     if (narrow) {
       // Ports on the bottom / top edges; the curve runs vertically.
-      const a = { x: layout[from].x + NODE_W / 2, y: layout[from].y + (heights[from] ?? 200) };
-      const b = { x: layout[to].x + NODE_W / 2, y: layout[to].y };
+      const a = { x: px(layout[from]).x + NODE_W / 2, y: layout[from].y + (heights[from] ?? 200) };
+      const b = { x: px(layout[to]).x + NODE_W / 2, y: layout[to].y };
       const bend = Math.max(32, Math.abs(b.y - a.y) / 2);
       path = `M ${a.x} ${a.y} C ${a.x} ${a.y + bend}, ${b.x} ${b.y - bend}, ${b.x} ${b.y}`;
       mid = { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 };
     } else {
-      const a = { x: layout[from].x + NODE_W, y: layout[from].y + (heights[from] ?? 200) / 2 };
-      const b = { x: layout[to].x, y: layout[to].y + (heights[to] ?? 200) / 2 };
+      const a = { x: px(layout[from]).x + NODE_W, y: layout[from].y + (heights[from] ?? 200) / 2 };
+      const b = { x: px(layout[to]).x, y: layout[to].y + (heights[to] ?? 200) / 2 };
       const bend = Math.max(40, Math.abs(b.x - a.x) / 2);
       path = `M ${a.x} ${a.y} C ${a.x + bend} ${a.y}, ${b.x - bend} ${b.y}, ${b.x} ${b.y}`;
       mid = { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 };
@@ -217,7 +233,7 @@ export function TrackCanvas({ nodes, edge }: { nodes: CanvasNode[]; edge: [strin
               className={`track-canvas-node ${dragging === n.id ? "is-dragging" : ""}`}
               style={{
                 width: NODE_W,
-                transform: pos ? `translate(${pos.x}px, ${pos.y}px)` : undefined,
+                transform: pos ? `translate(${px(pos).x}px, ${pos.y}px)` : undefined,
                 visibility: pos ? "visible" : "hidden",
               }}
               onPointerDown={(e) => onPointerDown(n.id, e)}

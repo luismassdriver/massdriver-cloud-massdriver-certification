@@ -214,9 +214,12 @@ strong { color: var(--foreground); }
 }
 
 /* ---------- Home-page bundle canvas */
-/* The drag area is invisible: the cards float on the page itself. */
+/* The drag area is invisible and spans the whole viewport, so cards can be
+   dragged past the content column; only the vertical band is bounded. */
 .track-canvas {
   position: relative;
+  width: 100vw;
+  margin-left: calc(50% - 50vw);
   overflow: hidden;
   touch-action: none; /* pointer drags, not page scroll, while on the canvas */
 }
