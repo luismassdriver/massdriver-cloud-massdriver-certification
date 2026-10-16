@@ -43,6 +43,13 @@ create table if not exists attempts (
   submitted_at timestamptz
 );
 create index if not exists attempts_user_idx on attempts(user_id, started_at desc);
+create table if not exists training_progress (
+  user_id      text not null references users(id),
+  track        text not null check (track in ('developer','ops')),
+  section      text not null,
+  completed_at timestamptz not null default now(),
+  primary key (user_id, track, section)
+);
 create table if not exists certificates (
   id         uuid primary key default gen_random_uuid(),
   user_id    text not null references users(id),
@@ -212,4 +219,28 @@ export async function ping(): Promise<boolean> {
   } catch {
     return false;
   }
+}
+
+/** Training progress: which sections of a track's module a user has completed. */
+export interface TrainingProgressRow {
+  track: Track;
+  section: string;
+  completed_at: Date;
+}
+
+export async function trainingProgressForUser(userId: string): Promise<TrainingProgressRow[]> {
+  await migrate();
+  const r = await pool().query<TrainingProgressRow>(
+    "select track, section, completed_at from training_progress where user_id = $1",
+    [userId],
+  );
+  return r.rows;
+}
+
+export async function markTrainingSectionComplete(userId: string, track: Track, section: string): Promise<void> {
+  await migrate();
+  await pool().query(
+    "insert into training_progress (user_id, track, section) values ($1, $2, $3) on conflict do nothing",
+    [userId, track, section],
+  );
 }

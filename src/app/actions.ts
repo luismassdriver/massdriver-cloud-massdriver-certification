@@ -7,6 +7,7 @@ import {
   certificateForAttempt,
   createAttempt,
   issueCertificate,
+  markTrainingSectionComplete,
   submitAttempt,
 } from "@/lib/db";
 import { isTrack } from "@/lib/questions";
@@ -47,4 +48,19 @@ export async function submitAnswers(attemptId: string, answers: Answers) {
 export async function certificateIdForAttempt(attemptId: string) {
   const cert = await certificateForAttempt(attemptId);
   return cert?.id ?? null;
+}
+
+/** Marks a training section done and moves to the next one (or the module overview when it was the last). */
+export async function completeTrainingSection(formData: FormData) {
+  const track = String(formData.get("track") ?? "");
+  const index = Number(formData.get("index"));
+  if (!isTrack(track)) throw new Error("Unknown track");
+  const { TRAINING } = await import("@/lib/training");
+  const sections = TRAINING[track].sections;
+  const section = sections[index];
+  if (!section) throw new Error("Unknown section");
+  const userId = await currentUserId();
+  if (!userId) redirect(`/signin?callbackUrl=/training/${track}/${index + 1}`);
+  await markTrainingSectionComplete(userId, track, section.slug);
+  redirect(index + 1 < sections.length ? `/training/${track}/${index + 2}` : `/training/${track}`);
 }
