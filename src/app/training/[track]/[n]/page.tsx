@@ -87,7 +87,7 @@ export default async function TrainingSectionPage(props: PageProps<"/training/[t
       </figure>
 
       <section className="space-y-4">
-        <h2>Check yourself</h2>
+        <h2>Example questions</h2>
         {questions.map((q, i) => (
           <PracticeQuestion
             key={q.id}

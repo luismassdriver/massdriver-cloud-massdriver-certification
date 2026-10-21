@@ -29,7 +29,7 @@ export default async function TrainingOverview(props: PageProps<"/training/[trac
         <h1>{t.title} training</h1>
         <p className="max-w-prose text-body">{mod.intro}</p>
         <p className="text-[11px] uppercase tracking-[0.12em] text-muted">
-          {mod.sections.length} sections · about {totalMinutes(track)} minutes · practice questions come from the real quiz
+          {mod.sections.length} sections · about {totalMinutes(track)} minutes · example questions come from the real quiz
         </p>
       </section>
 
@@ -52,7 +52,7 @@ export default async function TrainingOverview(props: PageProps<"/training/[trac
           <div className="flex flex-wrap items-center justify-between gap-3">
             <p className="text-sm text-body">
               {progress.completed === 0
-                ? "Not started yet. Work through the sections in order; each one ends with a practice question or two."
+                ? "Not started yet. Work through the sections in order; each one ends with an example question or two."
                 : `Pick up where you left off: section ${progress.nextIndex + 1}, ${mod.sections[progress.nextIndex].title}.`}
             </p>
             <Link href={`/training/${track}/${progress.nextIndex + 1}`} className="btn-primary">
@@ -84,7 +84,7 @@ export default async function TrainingOverview(props: PageProps<"/training/[trac
                   <span className="flex-1">
                     <span className={`block text-[15px] ${done ? "text-body" : "text-foreground"}`}>{s.title}</span>
                     <span className="block text-[11px] uppercase tracking-[0.12em] text-muted">
-                      {s.minutes} min · {s.practice.length} practice {s.practice.length === 1 ? "question" : "questions"}
+                      {s.minutes} min · {s.practice.length} example {s.practice.length === 1 ? "question" : "questions"}
                     </span>
                   </span>
                   <span className="text-[11px] uppercase tracking-[0.12em] text-brand">{done ? "Review" : "Open"}</span>
