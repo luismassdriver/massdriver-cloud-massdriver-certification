@@ -28,7 +28,7 @@ export function PracticeQuestion({
 
   return (
     <div className="card space-y-3">
-      <p className="eyebrow-muted">Practice question {number}</p>
+      <p className="eyebrow-muted">Example {number}</p>
       <p className="text-[15px] text-foreground">{prompt}</p>
       <div className="space-y-2">
         {options.map((opt, i) => {
