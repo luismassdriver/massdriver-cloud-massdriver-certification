@@ -2,7 +2,7 @@ import { auth } from "@/auth";
 import { startAttempt } from "./actions";
 import Link from "next/link";
 import { CompletedBadge } from "@/components/CompletedBadge";
-import { CheckIcon, TrainingProgressBar } from "@/components/TrainingProgress";
+import { CheckIcon, LockIcon, TrainingProgressBar } from "@/components/TrainingProgress";
 import { TrackCanvas } from "@/components/TrackCanvas";
 import { certificatesForUser, trainingProgressForUser } from "@/lib/db";
 import { PASS_MARK, QUESTIONS_PER_ATTEMPT, TRACKS, type Track } from "@/lib/questions";
@@ -61,12 +61,23 @@ export default async function Home() {
               </div>
               {session?.user && <TrainingProgressBar progress={training} compact />}
             </div>
-            <form action={startAttempt}>
-              <input type="hidden" name="track" value={track} />
-              <button className={`w-full ${done ? "btn-secondary" : "btn-primary"}`}>
-                {!session?.user ? "Sign in to start" : done ? "Take quiz again" : "Start quiz"}
+            {session?.user && !training.isComplete ? (
+              <button
+                className="btn-secondary w-full inline-flex items-center justify-center gap-2"
+                disabled
+                title="Finish the training to unlock the quiz"
+              >
+                <LockIcon />
+                Training incomplete
               </button>
-            </form>
+            ) : (
+              <form action={startAttempt}>
+                <input type="hidden" name="track" value={track} />
+                <button className={`w-full ${done ? "btn-secondary" : "btn-primary"}`}>
+                  {!session?.user ? "Sign in to start" : done ? "Take quiz again" : "Start quiz"}
+                </button>
+              </form>
+            )}
           </div>
         </div>
       ),
@@ -81,7 +92,7 @@ export default async function Home() {
           Get certified on <span className="text-brand">Massdriver</span>
         </h1>
         <p className="max-w-prose text-body">
-          Two tracks, {QUESTIONS_PER_ATTEMPT} questions each, pass at {PASS_MARK}.
+          Two tracks, {QUESTIONS_PER_ATTEMPT} questions each, pass at {PASS_MARK}. Each track starts with a short training module that unlocks its quiz.
           Questions and answer order are shuffled every attempt, and every wrong
           answer shows the explanation, so the quiz teaches as you go. Pass and you
           get a certificate with a public verification link for your onboarding

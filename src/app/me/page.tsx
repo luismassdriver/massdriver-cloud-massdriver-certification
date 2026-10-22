@@ -4,7 +4,7 @@ import { startAttempt } from "@/app/actions";
 import { auth } from "@/auth";
 import { LinkedInButtons } from "@/components/LinkedInButtons";
 import { MassdriverLogo } from "@/components/MassdriverLogo";
-import { CheckIcon, TrainingProgressBar } from "@/components/TrainingProgress";
+import { CheckIcon, LockIcon, TrainingProgressBar } from "@/components/TrainingProgress";
 import { formatDate } from "@/lib/certificate";
 import { latestCertificatePerTrack } from "@/lib/certificates";
 import { attemptsForUser, certificatesForUser, trainingProgressForUser } from "@/lib/db";
@@ -44,10 +44,17 @@ export default async function MePage() {
                   <p className="eyebrow-muted">{t.title}</p>
                   <p className="text-lg text-foreground">Not earned yet</p>
                   <p className="text-sm text-muted">{t.description}</p>
-                  <form action={startAttempt} className="pt-1">
-                    <input type="hidden" name="track" value={track} />
-                    <button className="btn-secondary">Start quiz</button>
-                  </form>
+                  {trackProgress(progressRows, track).isComplete ? (
+                    <form action={startAttempt} className="pt-1">
+                      <input type="hidden" name="track" value={track} />
+                      <button className="btn-secondary">Start quiz</button>
+                    </form>
+                  ) : (
+                    <p className="inline-flex items-center gap-2 pt-1 text-[11px] uppercase tracking-[0.12em] text-muted">
+                      <LockIcon />
+                      Training incomplete
+                    </p>
+                  )}
                 </li>
               );
             }

@@ -13,6 +13,7 @@ import { totalMinutes, trackProgress } from "@/lib/trainingProgress";
 export default async function TrainingOverview(props: PageProps<"/training/[track]">) {
   const { track } = await props.params;
   if (!isTrack(track)) notFound();
+  const locked = (await props.searchParams).locked !== undefined;
   const session = await auth();
   if (!session?.user?.id) redirect(`/signin?callbackUrl=/training/${track}`);
   const rows = await trainingProgressForUser(session.user.id);
@@ -32,6 +33,15 @@ export default async function TrainingOverview(props: PageProps<"/training/[trac
           {mod.sections.length} sections · about {totalMinutes(track)} minutes · example questions come from the real quiz
         </p>
       </section>
+
+      {locked && !progress.isComplete && (
+        <p className="border border-coral/60 bg-surface-2 p-4 text-sm text-body" role="status">
+          <span className="eyebrow text-coral">Quiz locked</span>
+          <span className="mt-1 block">
+            The {t.title} quiz unlocks once you have completed all {mod.sections.length} training sections below.
+          </span>
+        </p>
+      )}
 
       <section className={`card space-y-4 ${progress.isComplete ? "border-success/60" : ""}`}>
         <TrainingProgressBar progress={progress} />
