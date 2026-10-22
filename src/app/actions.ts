@@ -9,6 +9,7 @@ import {
   issueCertificate,
   markTrainingSectionComplete,
   submitAttempt,
+  trainingProgressForUser,
 } from "@/lib/db";
 import { isTrack } from "@/lib/questions";
 import { type Answers, buildLayout, grade } from "@/lib/quiz";
@@ -61,6 +62,17 @@ export async function completeTrainingSection(formData: FormData) {
   if (!section) throw new Error("Unknown section");
   const userId = await currentUserId();
   if (!userId) redirect(`/signin?callbackUrl=/training/${track}/${index + 1}`);
-  await markTrainingSectionComplete(userId, track, section.slug);
+  // A section only counts as complete once every example question in it
+  // has been answered and checked. If it was completed on an earlier visit
+  // the button is plain navigation, so skip the check then.
+  const already = (await trainingProgressForUser(userId)).some(
+    (r) => r.track === track && r.section === section.slug,
+  );
+  if (!already) {
+    const answered = new Set(String(formData.get("answered") ?? "").split(",").filter(Boolean));
+    const missing = section.practice.filter((id) => !answered.has(id));
+    if (missing.length > 0) throw new Error("Answer and check every example question before marking this section complete");
+    await markTrainingSectionComplete(userId, track, section.slug);
+  }
   redirect(index + 1 < sections.length ? `/training/${track}/${index + 2}` : `/training/${track}`);
 }
