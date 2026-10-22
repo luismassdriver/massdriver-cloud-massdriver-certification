@@ -19,6 +19,11 @@ export async function startAttempt(formData: FormData) {
   if (!isTrack(track)) throw new Error("Unknown track");
   const userId = await currentUserId();
   if (!userId) redirect(`/signin?callbackUrl=/quiz/${track}`);
+  // The quiz is locked until the track's training has been completed.
+  const { trackProgress } = await import("@/lib/trainingProgress");
+  if (!trackProgress(await trainingProgressForUser(userId), track).isComplete) {
+    redirect(`/training/${track}?locked=1`);
+  }
   const seed = (Date.now() ^ Math.floor(Math.random() * 0xffffffff)) >>> 0;
   const attempt = await createAttempt(userId, track, buildLayout(track, seed));
   redirect(`/attempt/${attempt.id}`);
