@@ -4,7 +4,7 @@ import { startAttempt } from "@/app/actions";
 import { auth } from "@/auth";
 import { LinkedInButtons } from "@/components/LinkedInButtons";
 import { MassdriverLogo } from "@/components/MassdriverLogo";
-import { CheckIcon, TrainingProgressBar } from "@/components/TrainingProgress";
+import { CheckIcon, LockIcon, TrainingProgressBar } from "@/components/TrainingProgress";
 import { formatDate } from "@/lib/certificate";
 import { latestCertificatePerTrack } from "@/lib/certificates";
 import { attemptsForUser, certificatesForUser, trainingProgressForUser } from "@/lib/db";
@@ -50,8 +50,9 @@ export default async function MePage() {
                       <button className="btn-secondary">Start quiz</button>
                     </form>
                   ) : (
-                    <p className="pt-1 text-[11px] uppercase tracking-[0.12em] text-muted">
-                      Quiz locked · finish the training below first
+                    <p className="inline-flex items-center gap-2 pt-1 text-[11px] uppercase tracking-[0.12em] text-muted">
+                      <LockIcon />
+                      Training incomplete
                     </p>
                   )}
                 </li>

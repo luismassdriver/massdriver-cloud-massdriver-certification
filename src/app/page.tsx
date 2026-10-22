@@ -2,7 +2,7 @@ import { auth } from "@/auth";
 import { startAttempt } from "./actions";
 import Link from "next/link";
 import { CompletedBadge } from "@/components/CompletedBadge";
-import { CheckIcon, TrainingProgressBar } from "@/components/TrainingProgress";
+import { CheckIcon, LockIcon, TrainingProgressBar } from "@/components/TrainingProgress";
 import { TrackCanvas } from "@/components/TrackCanvas";
 import { certificatesForUser, trainingProgressForUser } from "@/lib/db";
 import { PASS_MARK, QUESTIONS_PER_ATTEMPT, TRACKS, type Track } from "@/lib/questions";
@@ -62,8 +62,13 @@ export default async function Home() {
               {session?.user && <TrainingProgressBar progress={training} compact />}
             </div>
             {session?.user && !training.isComplete ? (
-              <button className="btn-secondary w-full" disabled title="Finish the training to unlock the quiz">
-                Quiz locked · finish training first
+              <button
+                className="btn-secondary w-full inline-flex items-center justify-center gap-2"
+                disabled
+                title="Finish the training to unlock the quiz"
+              >
+                <LockIcon />
+                Training incomplete
               </button>
             ) : (
               <form action={startAttempt}>
