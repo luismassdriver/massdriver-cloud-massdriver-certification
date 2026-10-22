@@ -15,12 +15,15 @@ export function PracticeQuestion({
   options,
   correct,
   rationale,
+  onChecked,
 }: {
   number: number;
   prompt: string;
   options: string[];
   correct: number;
   rationale: string;
+  /** Called the first time (and every time) the learner checks an answer. */
+  onChecked?: () => void;
 }) {
   const [chosen, setChosen] = useState<number | null>(null);
   const [checked, setChecked] = useState(false);
@@ -61,7 +64,15 @@ export function PracticeQuestion({
         })}
       </div>
       {!checked ? (
-        <button type="button" className="btn-secondary" disabled={chosen === null} onClick={() => setChecked(true)}>
+        <button
+          type="button"
+          className="btn-secondary"
+          disabled={chosen === null}
+          onClick={() => {
+            setChecked(true);
+            onChecked?.();
+          }}
+        >
           Check answer
         </button>
       ) : (

@@ -3,7 +3,7 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { completeTrainingSection } from "@/app/actions";
 import { auth } from "@/auth";
-import { PracticeQuestion } from "@/components/PracticeQuestion";
+import { SectionExamples } from "@/components/SectionExamples";
 import { CheckIcon, TrainingProgressBar } from "@/components/TrainingProgress";
 import { trainingProgressForUser } from "@/lib/db";
 import { isTrack, questionById, TRACKS } from "@/lib/questions";
@@ -86,36 +86,21 @@ export default async function TrainingSectionPage(props: PageProps<"/training/[t
         <figcaption className="px-1 text-xs text-muted">{section.screenshot.caption}</figcaption>
       </figure>
 
-      <section className="space-y-4">
-        <h2>Example questions</h2>
-        {questions.map((q, i) => (
-          <PracticeQuestion
-            key={q.id}
-            number={i + 1}
-            prompt={q.prompt}
-            options={q.options}
-            correct={q.correct}
-            rationale={q.rationale}
-          />
-        ))}
-      </section>
-
-      <section className="flex flex-wrap items-center justify-between gap-3 border-t border-line pt-6">
-        {index > 0 ? (
-          <Link href={`/training/${track}/${index}`} className="btn-secondary">
-            ← Previous
-          </Link>
-        ) : (
-          <span />
-        )}
-        <form action={completeTrainingSection}>
-          <input type="hidden" name="track" value={track} />
-          <input type="hidden" name="index" value={index} />
-          <button className="btn-primary">
-            {done ? (isLast ? "Back to overview" : "Next section →") : isLast ? "Mark complete & finish" : "Mark complete & continue →"}
-          </button>
-        </form>
-      </section>
+      <SectionExamples
+        questions={questions.map((q) => ({
+          id: q.id,
+          prompt: q.prompt,
+          options: q.options,
+          correct: q.correct,
+          rationale: q.rationale,
+        }))}
+        track={track}
+        index={index}
+        done={done}
+        isLast={isLast}
+        prevHref={index > 0 ? `/training/${track}/${index}` : null}
+        action={completeTrainingSection}
+      />
     </div>
   );
 }
